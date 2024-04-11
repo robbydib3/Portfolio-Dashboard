@@ -26,12 +26,12 @@ CURRENT_STOCKS <- data.frame(Ticker = c('DJIA','META'),
 stock_pull <- function(ticker,aquisition_date){
    data <- getSymbols(ticker, from = aquisition_date,
                     to = current_date,warnings = FALSE,
-                    auto.assign = FALSE)
+                    auto.assign = FALSE) 
 
    return(data)
 }
 
-return_fun <- function(data,initial_price,shares,name){
+return_fun <- function(data,initial_price,shares){
   
   purchase_price_per_share <- initial_price
   number_of_shares <- shares
@@ -68,10 +68,16 @@ names(stock_data) <- CURRENT_STOCKS$Ticker
 
 
 ## Export
+final <- data.frame()
+
 for(name in names(stock_data)){
-  data <- stock_data[name] %>% data.frame()
+  data <- stock_data[name] %>% data.frame() 
   colnames(data) <- sapply(colnames(data), function(x) strsplit(x, "\\.")[[1]][2])
-  data <- tibble::rownames_to_column(data, var = "Date")
-  write.csv(data,paste0('C:/Users/rober/OneDrive/Documents/Stocks/Data/',name,'.csv'))
+  data <- tibble::rownames_to_column(data, var = "Date") %>% 
+    mutate(Ticker = name)
+  final <- rbind(final,data)
 }
 
+write.csv(final,'C:/Users/rober/OneDrive/Documents/Portfolio-Dashboard/Stocks/Data/All_Stock_Data.csv')
+
+print('DATA REFRESHED')
