@@ -17,11 +17,8 @@ options("getSymbols.yahoo.warning"=FALSE)
 current_date <- Sys.Date()
 start_date <- "2024-03-21"
 
-
-CURRENT_STOCKS <- data.frame(Ticker = c('DJIA','META'),
-                             `Aquisition Date` = c('2024-03-21','2024-03-21'),
-                             Shares = c(2,.146294),
-                             `Initial Price` = c(22.68,508.98))
+CURRENT_STOCKS <- read.csv('C:/Users/rober/Documents/Portfolio-Dashboard/CURRENT STOCKS.csv',check.names = FALSE) %>% 
+  mutate(`Acquistion Date` = as.Date(`Acquistion Date`,'%m/%d/%Y'))
 
 stock_pull <- function(ticker,aquisition_date){
    data <- getSymbols(ticker, from = aquisition_date,
@@ -58,26 +55,21 @@ return_fun <- function(data,initial_price,shares){
 
 
 
-
 stock_data <- lapply(1:nrow(CURRENT_STOCKS), function(n) {
-  return_fun(stock_pull(CURRENT_STOCKS$Ticker[n],CURRENT_STOCKS$Aquisition.Date[n]),CURRENT_STOCKS$Initial.Price[n],CURRENT_STOCKS$Shares[n])
+  return_fun(stock_pull(CURRENT_STOCKS$Ticker[n],CURRENT_STOCKS$`Acquistion Date`[n]),CURRENT_STOCKS$`Initial Price`[n],CURRENT_STOCKS$Shares[n])
 })
-
-names(stock_data) <- CURRENT_STOCKS$Ticker
-
-
 
 ## Export
 final <- data.frame()
 
-for(name in names(stock_data)){
+for(name in 1:nrow(CURRENT_STOCKS)){
   data <- stock_data[name] %>% data.frame() 
-  colnames(data) <- sapply(colnames(data), function(x) strsplit(x, "\\.")[[1]][2])
+  #colnames(data) <- sapply(colnames(data), function(x) strsplit(x, "\\.")[[1]][2])
   data <- tibble::rownames_to_column(data, var = "Date") %>% 
-    mutate(Ticker = name)
-  final <- rbind(final,data)
+    mutate(Ticker = CURRENT_STOCKS$Ticker[name])
+   final <- rbind(final,data)
 }
 
-write.csv(final,'C:/Users/rober/OneDrive/Documents/Portfolio-Dashboard/Stocks/Data/All_Stock_Data.csv')
+write.csv(final,'C:/Users/rober/Documents/Portfolio-Dashboard/All_Stock_Data.csv')
 
 print('DATA REFRESHED')
